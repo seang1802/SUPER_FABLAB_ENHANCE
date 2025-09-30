@@ -1,0 +1,41 @@
+#Gcode scripts
+#Need motor G-code to turn key.
+#Need more precise measurment and maybe z-axis jiggle to help grab tool and release tool.
+
+
+#t0 extrudor dock
+G90
+
+SAVE_GCODE_STATE NAME=toolchange
+G1 z100 f1000 //bed clearence for safety
+G1 x50 y150 f500
+G1 xXX yXX f500 //clear to engage tool
+SET_GCODE_OFFSET X=0 Y=0 Z=0
+RESTORE_GCODE_STTE NAME=toolchange
+
+#t0 extrudor undock
+G90
+SAVE_GCODE_STATE NAME=toolchange
+G1 z100 f1000 //bed clearence for safety
+G1 x50 y150 f500
+G1 xXX yXX f500 //clear to engage tool
+SET_GCODE_OFFSET X=0 Y=0 Z=0
+RESTORE_GCODE_STTE NAME=toolchange
+
+
+
+#t1 Pen Tool dock
+G1 z100 f1000 //bed clearence for safety
+G1 x150 y150 f500
+G1 xXX yXX f500 //clear to engage tool
+SET_GCODE_OFFSET X=0 Y=0 Z=0
+RESTORE_GCODE_STTE NAME=toolchange
+
+#t1 Pen Tool undock
+G1 z100 f1000 //bed clearence for safety
+G1 x150 y150 f500
+G1 xXX yXX f500 //clear to engage tool
+SET_GCODE_OFFSET X=0 Y=0 Z=0
+RESTORE_GCODE_STTE NAME=toolchange
+
+
