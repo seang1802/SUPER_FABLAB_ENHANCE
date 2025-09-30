@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import cv2 as cv
 
-# --- Params ---
+# consts
 bed_w   = 220.0   # X span in mm (clamps X)
 scale   = 8.0     # pixels per mm
 z_eps   = 1e-4    # epsilon for Z comparisons
@@ -18,11 +18,9 @@ text  = Path(in_path).read_text(encoding="utf-8", errors="ignore")
 lines = text.splitlines()
 
 # --- Try to detect layer height from header comments ---
-# Matches things like: ";Layer height: 0.2" or "; layer_height = 0.2"
 m = re.search(r'layer[\s_-]*height\s*[:=]\s*([0-9]*\.?[0-9]+)', text, re.I)
 detected_layer_h = float(m.group(1)) if m else None
 print(detected_layer_h)
-# --- State ---
 x = y = z = e = 0.0
 abs_xy = True  # G90
 abs_e  = True  # M82
@@ -31,7 +29,7 @@ z_max = 0.0
 z_deltas = []   # collect positive Z jumps to infer layer height if needed
 target_layer = 97   # Layer Print (ON)
 
-# --- Parse + collect XZ segments ---
+# Parse XZ
 for raw in lines:
     s = raw.split(";", 1)[0].strip()
     if not s:
@@ -61,8 +59,6 @@ for raw in lines:
     if "Y" in words: y = words["Y"] if abs_xy else y + words["Y"]
     if "Z" in words: z = words["Z"] if abs_xy else z + words["Z"]
     if "E" in words: e = words["E"] if abs_e  else e + words["E"]
-
-    # collect positive Z jumps to estimate layer height (ignores z-hop downs)
     if z - pz > z_eps:
         z_deltas.append(z - pz)
 
@@ -74,7 +70,7 @@ for raw in lines:
         if z0 > z_max: z_max = z0
         if z1 > z_max: z_max = z1
 
-# --- Decide layer height ---
+# Layer Height
 if detected_layer_h is not None:
     layer_h = detected_layer_h
 elif z_deltas:
@@ -82,7 +78,6 @@ elif z_deltas:
 else:
     layer_h = 0.2  # fallback
 
-# --- Crop/scale to target layer (optional) ---
 if target_layer is not None:
     z_top = (target_layer + 1) * layer_h
     segments = [((x0, z0), (x1, z1))
@@ -90,7 +85,7 @@ if target_layer is not None:
                 if max(z0, z1) <= z_top + 1e-6]
     z_max = z_top
 
-# --- Rasterize front view ---
+# Rasterize
 if z_max <= 0.0:
     z_max = layer_h
 
@@ -109,4 +104,5 @@ for (p0, p1) in segments:
 
 cv.imwrite(out_path, img)
 print(f"wrote {out_path} | segments: {len(segments)} | z_max: {z_max:.3f} mm | layer_h: {layer_h:.3f} mm")
+
 print(z_max)
