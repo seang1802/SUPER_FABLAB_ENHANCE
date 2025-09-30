@@ -7,7 +7,7 @@ import numpy as np
 import cv2 as cv
 
 # consts
-bed_w   = 220.0   # X span in mm (clamps X)
+bed_w   = 200.0   # X span in mm (clamps X)
 scale   = 8.0     # pixels per mm
 z_eps   = 1e-4    # epsilon for Z comparisons
 
@@ -106,3 +106,4 @@ cv.imwrite(out_path, img)
 print(f"wrote {out_path} | segments: {len(segments)} | z_max: {z_max:.3f} mm | layer_h: {layer_h:.3f} mm")
 
 print(z_max)
+
