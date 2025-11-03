@@ -1,0 +1,55 @@
+#roi for each img
+00 Polygon points (FULL-RES coords): [(31, 1673), (4531, 1598), (3408, 1495), (1442, 1529)]
+01 Polygon points (FULL-RES coords): [(29, 1687), (4522, 1601), (3463, 1495), (1522, 1529)]
+02 Polygon points (FULL-RES coords): [(34, 1682), (4560, 1606), (3365, 1486), (1591, 1522)]
+03 Polygon points (FULL-RES coords): [(3331, 1481), (1546, 1510), (168, 1666), (4450, 1601)]
+04 Polygon points (FULL-RES coords): [(1550, 1481), (3262, 1445), (4517, 1603), (254, 1680)]
+05 Polygon points (FULL-RES coords): [(1529, 1464), (3334, 1423), (4423, 1608), (533, 1673)]
+06 Polygon points (FULL-RES coords): [(1574, 1445), (3290, 1411), (4498, 1644), (403, 1704)]
+07 Polygon points (FULL-RES coords): [(1550, 1428), (3317, 1394), (4493, 1642), (506, 1716)]
+08 Polygon points (FULL-RES coords): [(1574, 1418), (3233, 1382), (4315, 1620), (677, 1670)]
+09 Polygon points (FULL-RES coords): [(1630, 1397), (3240, 1368), (4418, 1639), (715, 1704)]
+10 Polygon points (FULL-RES coords): [(1565, 1421), (3250, 1373), (4296, 1649), (833, 1704)]
+11 Polygon points (FULL-RES coords): [(1654, 1397), (3218, 1349), (4296, 1656), (787, 1704)]
+12 Polygon points (FULL-RES coords): [(1608, 1373), (3240, 1322), (4330, 1642), (581, 1697)]
+13 Polygon points (FULL-RES coords): [(1608, 1351), (3230, 1308), (4339, 1666), (571, 1704)]
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+
+    # background subtraction in ROI
+    diff = cv.absdiff(real, bg)
+    diff = cv.bitwise_and(diff, diff, mask=mask)
+
+    # replace your smoothing + threshold + edges with:
+    blur = cv.medianBlur(diff, 15)
+    thresh = cv.adaptiveThreshold(blur,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY,31,3)
+
+    canny = cv.Canny(thresh, 0, 25)
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (5,5 ))
+    opening = cv.morphologyEx(canny, cv.MORPH_CLOSE, kernel)
+    dilate = cv.dilate(opening, kernel, iterations=2)
+
+    cnts = cv.findContours(dilate, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
+    min_area = 500
+    for c in cnts:
+        area = cv.contourArea(c)
+        if area > min_area:
+            cv.drawContours(diff, [c], -1, (36, 255, 12), 2)
+
+   # cv.imshow('image', diff)
+    cv.imwrite('image.png', diff)
+    cv.imwrite('contours.png', canny)
+    cv.waitKey(0)
+    print("Done.")
